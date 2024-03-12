@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Page</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link rel='stylesheet' type="text/css" href='../static/css/style.css'>
+</head>
+<body>
+    <div class="card">
+        <input type="checkbox" id="chk" aria-hidden="true" name="">
+        <div class="content">
+            <div class="front">
+                {% if error_message %}
+                <div class="error-message">{{ error_message }}</div>
+                {% endif %}
+                <div class="inner">
+                    <h2>Registration Page</h2>
+                    <form action="/register" method="post" onsubmit="return validatePassword()">
+                        <input type="email" id="email" name="email" placeholder="Email" required>
+                        <!-- <h3>Username:</h3> -->
+                        <input type="text" id="username" name="username" placeholder="Username" required>
+                        <!-- <label for="password">Password: </label> -->
+                        <input type="password" id="password" name="password" placeholder="Password" required onkeydown="captureKeyDown(event)" onkeyup="captureKeyUp(event)">
+                        <a href="/login"><label for="#chk" aria-hidden="true">Log In</a></label>
+                        <button type="submit" style="bottom: 15%">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>    
+    </div>
+    
+    <script src="../static/js/script.js">
+        
+    </script>  
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link rel='stylesheet' type="text/css" href='../static/css/style.css'>
+</head>
+<body>
+    <div class="card">
+        <input type="checkbox" id="chk" aria-hidden="true" name="">
+        <div class="content">
+            <label for="chk" aria-hidden="true">Log In</label>
+            <div class="front">
+                {% if error_message %}
+                <div class="error-message">{{ error_message }}</div>
+                {% endif %}
+                {% if success_message %}
+                <div class="success-message">{{ success_message }}</div>
+                {% endif %}
+                <div class="inner">
+                    <h2>Login Page</h2>
+                    <form action="/authenticate" method="post">
+
+                        <div id="time" style="display: none;">
+                            <div class="circle" style="--clr:#ff2972">
+                                <svg>
+                                    <circle cx="40" cy="40" r="30" id="ss"></circle>
+                                </svg>
+                                <div id="seconds">00<br><span>Seconds</span></div>
+                            </div>
+                        </div>
+
+                        <!-- <label for="username">Username:</label> -->
+                        <input type="text" id="username" name="username" placeholder="Username">
+                        <!-- <label for="password">Password: </label> -->
+                        <input type="password" id="password" name="password" placeholder="Password" required onkeydown="captureKeyDown(event)" onkeyup="captureKeyUp(event)">
+                        <a href="/forgot_password"><label>Forget password?</label></a>
+                        <button type="submit" style="bottom: 25%">Login</button>
+                    </form>
+                </div>
+                
+            </div>
+        </div>    
+    </div>
+
+    <script>
+        var keyDownTime = null;
+        var shiftPressed=false;
+        var capsLockPressed=false;
+        var capsLockTriggered = false;
+
+        function captureKeyDown(event) {
+            var key = event.key;
+            if (key !== "Backspace" && key !== "Enter") {
+                keyDownTime = performance.now();
+                if (key === "Shift") {
+                    shiftPressed = true;
+                } 
+                else if (key === "CapsLock") {
+                    capsLockPressed = !capsLockPressed;
+                    capsLockTriggered = true;
+                }
+                console.log("Key Down time: " + keyDownTime);
+            }
+        }
+
+        function captureKeyUp(event) {
+            var key = event.key;
+
+
+            if (key === "Backspace") {
+                // Clear the timings
+                $.post("/clear_timings")
+                    .done(function(data) {
+                        // Handle the response if needed
+                    })
+                    .fail(function() {
+                        console.log("Error clearing timings");
+                    });
+            } else if (key !== "Enter") {
+                var keyUpTime = performance.now();
+                console.log("Key Up time: " + keyUpTime);
+                var keyToCapture = key.toLowerCase();
+
+                if ((capsLockPressed || capsLockTriggered) && key !== "capslock") {
+                    keyToCapture = "Capslock." + keyToCapture;
+                    capsLockTriggered = false;
+                }
+                else if(shiftPressed && key !== "shift"){
+                    keyToCapture="Shift."+keyToCapture;
+                    shiftPressed=false;
+                }
+
+                if (keyToCapture !== "Capslock.capslock" && keyToCapture !== "Shift.shift" && keyToCapture !== "shift") {
+                    $.post("/capture_keystrokes", { keyUpTime: keyUpTime, keyDownTime: keyDownTime, key: keyToCapture})
+                        .done(function(data) {
+                                // Handle the response if needed
+                        })
+                        .fail(function() {
+                            console.log("Error in capturing keystrokes");
+                        });
+                }
+
+            }
+        }
+
+        // Update the lockout timer every second
+        $(document).ready(function() {
+            var lockoutTimer = parseInt("{{ lockout_timer }}");
+            let seconds=document.getElementById('seconds');
+            let ss=document.getElementById('ss');
+            let timeDiv = document.getElementById('time');
+
+            let endDate= Date.now()+30000;
+            
+            if (lockoutTimer) { 
+                timeDiv.style.display = 'flex';
+                var interval = setInterval(function() {
+                    lockoutTimer--;
+                    $('#lockoutTimer').text(lockoutTimer);
+
+                    let now=new Date(endDate).getTime();
+                    let countDown=new Date().getTime();
+                    let distance=now-countDown;
+
+                    let s=Math.floor((distance % (1000 *60))/(1000))
+                    seconds.innerHTML=s+ "<br><span>Seconds</span>";
+
+                    ss.style.strokeDashoffset=440-(440*s)/60;
+                    if (lockoutTimer <= 0 && distance<=0) {
+                        clearInterval(interval);
+                        window.location.href = '/login';
+                    }
+                }, 1000);
+
+            }
+            
+        }); 
+
+       
+    </script> 
+</body>
+</html>
