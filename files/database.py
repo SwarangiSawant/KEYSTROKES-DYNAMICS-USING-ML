@@ -6,8 +6,8 @@ import json
 DB_HOST = 'YOUR_HOST'   #localhost
 DB_PORT = 'YOUR_PORT'   #5432
 DB_NAME = 'YOUR_USERNAME'
-DB_USER = 'YOUR_USER'   #posgres
-DB_PASSWORD = 'YOUR_PASSWORD'
+DB_USER = 'USER'   #posgres
+DB_PASSWORD = 'YOUR PASSWORD'
 
 
 # Connect to the PostgreSQL database

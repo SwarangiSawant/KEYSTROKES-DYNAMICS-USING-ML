@@ -26,8 +26,7 @@ create_table()
 
 # Timing storage for keystrokes
 timings = []
-successful_logins = 0
-total_logins = 0
+
 
 
 # Load the trained logistic regression model
@@ -189,6 +188,13 @@ def authenticate():
                         detailed_keystroke_data=detailed_data(cap_key)
                         print(detailed_keystroke_data)
 
+                        captured_keydown_time = sum(float(item['down_time']) for item in cap_key)
+                        captured_keyup_time = sum(float(item['up_time']) for item in cap_key)
+                        captured_total_time = captured_keydown_time + captured_keyup_time
+
+                        diff=abs(stores_total_time-captured_total_time)
+                        accuracy=format(((diff/captured_total_time)*100),'.2f')
+
                         cursor.execute('UPDATE users SET login_attempts = %s WHERE username = %s', (3, user_data[1]))
                         conn.commit()
                         session.pop('lockout', None)
@@ -204,10 +210,10 @@ def authenticate():
                         except:
                             error_message="Password length doesn't match to 8"
                             return render_template('registration.html', error_message=error_message)
-                        successful_logins += 1
-                        total_logins += 1
+                
+        
                         # Render the success.html template with the accuracy
-                        accuracy = calculate_accuracy(successful_logins, total_logins)
+                        
                         session.clear()
                         success_message = 'Login successful'
                         conn.commit()
@@ -216,7 +222,6 @@ def authenticate():
                         timings=[]
                         return render_template('success.html', success_message=success_message,accuracy=accuracy,username=username)
                     else:
-                        total_logins += 1
                         detailed_keystroke_data=detailed_data(timings)
                         print(detailed_keystroke_data)
                         
@@ -232,7 +237,6 @@ def authenticate():
                         decrement_login_attempts(user_data[1])
                         return render_template('login.html', error_message=error_message)
                 else:
-                    total_logins += 1
                     detailed_keystroke_data=detailed_data(timings)
                     print(detailed_keystroke_data)
                     # print(f" Compare else:{user_data[1]}")
@@ -519,13 +523,7 @@ def detailed_data(captured_timings):
         error_message = 'Keystrokes not captured properly. Please try again.'
         return render_template('login.html', error_message=error_message)
 
-# Add a function to calculate accuracy
-def calculate_accuracy(successful_logins, total_logins):
-    print(f"Success:{successful_logins}")
-    print(f"Total:{total_logins}")
-    if total_logins == 0:
-        return 0
-    return (successful_logins / total_logins) * 100
+
 
 
 if __name__ == '__main__':
